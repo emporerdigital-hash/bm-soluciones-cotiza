@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { InstallationGallery } from "./installation-gallery";
 import { LeadForm } from "./lead-form";
 
 export default function QuotePage() {
@@ -17,16 +17,7 @@ export default function QuotePage() {
         <p className="eyebrow dark">COTIZA PANELES SOLARES</p>
         <h1 id="direct-quote-title">Calcula tu sistema solar en 3 minutos.</h1>
         <p>Responde estas preguntas y recibe una propuesta aterrizada a tu consumo. No necesitas subir tu recibo para comenzar.</p>
-        <div className="bm-photo-strip" aria-label="Soluciones solares BM para hogares y negocios">
-          <figure>
-            <Image src="/bm-home.webp" alt="Paneles solares instalados en una vivienda" width={700} height={700} sizes="(max-width: 800px) 48vw, 220px" />
-            <figcaption>Hogares</figcaption>
-          </figure>
-          <figure>
-            <Image src="/bm-installation.webp" alt="Instalación profesional de paneles solares" width={900} height={600} sizes="(max-width: 800px) 48vw, 220px" />
-            <figcaption>Comercios e industria</figcaption>
-          </figure>
-        </div>
+        <InstallationGallery />
         <div className="direct-trust" aria-label="Beneficios de la cotización">
           <span><b>Sin costo</b><small>Primer diagnóstico</small></span>
           <span><b>Sin compromiso</b><small>Decides tú</small></span>
