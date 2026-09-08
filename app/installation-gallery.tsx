@@ -1,4 +1,4 @@
-/* eslint-disable @next/next/no-img-element -- Full-size photos are fetched only after the lightbox opens. */
+/* eslint-disable @next/next/no-img-element -- Installation photos load lazily and the large viewer opens on demand. */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -12,15 +12,13 @@ const photos = Array.from({ length: 7 }, (_, index) => {
   };
 });
 
-export function InstallationGallery() {
-  const [active, setActive] = useState<number | null>(null);
-
+function PhotoViewer({ active, setActive }: { active: number | null; setActive: (value: number | null) => void }) {
   useEffect(() => {
     if (active === null) return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") setActive(null);
-      if (event.key === "ArrowRight") setActive((current) => current === null ? null : (current + 1) % photos.length);
-      if (event.key === "ArrowLeft") setActive((current) => current === null ? null : (current - 1 + photos.length) % photos.length);
+      if (event.key === "ArrowRight") setActive((active + 1) % photos.length);
+      if (event.key === "ArrowLeft") setActive((active - 1 + photos.length) % photos.length);
     };
     document.body.style.overflow = "hidden";
     window.addEventListener("keydown", onKeyDown);
@@ -28,11 +26,37 @@ export function InstallationGallery() {
       document.body.style.overflow = "";
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [active]);
+  }, [active, setActive]);
 
-  const move = (direction: number) => {
-    setActive((current) => current === null ? null : (current + direction + photos.length) % photos.length);
-  };
+  if (active === null) return null;
+  const move = (direction: number) => setActive((active + direction + photos.length) % photos.length);
+
+  return <div className="bm-lightbox" role="dialog" aria-modal="true" aria-label="Fotografía ampliada" onClick={() => setActive(null)}>
+    <button className="bm-lightbox-close" type="button" onClick={() => setActive(null)} aria-label="Cerrar visor">×</button>
+    <button className="bm-lightbox-arrow previous" type="button" onClick={(event) => { event.stopPropagation(); move(-1); }} aria-label="Fotografía anterior">‹</button>
+    <figure onClick={(event) => event.stopPropagation()}>
+      <img src={photos[active].full} alt={photos[active].alt} />
+      <figcaption>{active + 1} / {photos.length} · Instalación real de BM Soluciones</figcaption>
+    </figure>
+    <button className="bm-lightbox-arrow next" type="button" onClick={(event) => { event.stopPropagation(); move(1); }} aria-label="Fotografía siguiente">›</button>
+  </div>;
+}
+
+export function InstallationPhoto({ photoIndex, caption }: { photoIndex: number; caption: string }) {
+  const [active, setActive] = useState<number | null>(null);
+  const photo = photos[photoIndex];
+
+  return <>
+    <button className="bm-feature-photo" type="button" onClick={() => setActive(photoIndex)} aria-label={`Ampliar: ${caption}`}>
+      <img src={photo.full} alt={photo.alt} width="1280" height="960" loading="lazy" decoding="async" />
+      <span><b>{caption}</b><small>Ver fotografía completa</small></span>
+    </button>
+    <PhotoViewer active={active} setActive={setActive} />
+  </>;
+}
+
+export function InstallationGallery() {
+  const [active, setActive] = useState<number | null>(null);
 
   return <>
     <div className="bm-gallery-heading">
@@ -47,15 +71,6 @@ export function InstallationGallery() {
         </button>
       )}
     </div>
-
-    {active !== null && <div className="bm-lightbox" role="dialog" aria-modal="true" aria-label="Fotografía ampliada" onClick={() => setActive(null)}>
-      <button className="bm-lightbox-close" type="button" onClick={() => setActive(null)} aria-label="Cerrar visor">×</button>
-      <button className="bm-lightbox-arrow previous" type="button" onClick={(event) => { event.stopPropagation(); move(-1); }} aria-label="Fotografía anterior">‹</button>
-      <figure onClick={(event) => event.stopPropagation()}>
-        <img src={photos[active].full} alt={photos[active].alt} />
-        <figcaption>{active + 1} / {photos.length} · Instalación real de BM Soluciones</figcaption>
-      </figure>
-      <button className="bm-lightbox-arrow next" type="button" onClick={(event) => { event.stopPropagation(); move(1); }} aria-label="Fotografía siguiente">›</button>
-    </div>}
+    <PhotoViewer active={active} setActive={setActive} />
   </>;
 }

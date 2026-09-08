@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { InstallationGallery } from "./installation-gallery";
+import { InstallationGallery, InstallationPhoto } from "./installation-gallery";
 import { LeadForm } from "./lead-form";
 
 export default function QuotePage() {
