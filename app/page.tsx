@@ -1,12 +1,13 @@
+import Link from "next/link";
 import { LeadForm } from "./lead-form";
 
 export default function QuotePage() {
   return <main className="direct-quote-page bm-direct-page">
     <header className="direct-nav bm-nav">
-      <a className="bm-brand" href="/" aria-label="BM Soluciones">
+      <Link className="bm-brand" href="/" aria-label="BM Soluciones">
         <span className="bm-mark" aria-hidden="true">BM</span>
         <span><b>BM SOLUCIONES</b><small>ENERGÍA QUE SE NOTA</small></span>
-      </a>
+      </Link>
       <span>Guadalajara · Zona Metropolitana</span>
     </header>
 
