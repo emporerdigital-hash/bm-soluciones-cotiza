@@ -43,6 +43,7 @@ type LeadInput = {
 };
 
 const asText = (value: unknown, maxLength = 256) => typeof value === "string" ? value.trim().slice(0, maxLength) : "";
+const normalize = (value: string) => value.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").trim().toLowerCase();
 const sha256 = async (value: string) => Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(normalize(value))))).map((byte) => byte.toString(16).padStart(2, "0")).join("");
 const digits = (value: string) => value.replace(/\D/g, "");
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
