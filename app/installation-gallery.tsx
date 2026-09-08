@@ -34,9 +34,9 @@ function PhotoViewer({ active, setActive }: { active: number | null; setActive: 
   return <div className="bm-lightbox" role="dialog" aria-modal="true" aria-label="Fotografía ampliada" onClick={() => setActive(null)}>
     <button className="bm-lightbox-close" type="button" onClick={() => setActive(null)} aria-label="Cerrar visor">×</button>
     <button className="bm-lightbox-arrow previous" type="button" onClick={(event) => { event.stopPropagation(); move(-1); }} aria-label="Fotografía anterior">‹</button>
-    <figure onClick={(event) => event.stopPropagation()}>
-      <img src={photos[active].full} alt={photos[active].alt} />
-      <figcaption>{active + 1} / {photos.length} · Instalación real de BM Soluciones</figcaption>
+    <figure>
+      <img src={photos[active].full} alt={photos[active].alt} onClick={(event) => event.stopPropagation()} />
+      <figcaption onClick={(event) => event.stopPropagation()}>{active + 1} / {photos.length} · Instalación real de BM Soluciones</figcaption>
     </figure>
     <button className="bm-lightbox-arrow next" type="button" onClick={(event) => { event.stopPropagation(); move(1); }} aria-label="Fotografía siguiente">›</button>
   </div>;
