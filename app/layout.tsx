@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element -- Meta's noscript pixel requires a raw image request. */
 import type { Metadata } from "next";
+import { Poppins } from "next/font/google";
 import "./globals.css";
 import "./quiz.css";
 import "./trust.css";
@@ -8,6 +9,13 @@ import "./gallery.css";
 import "./outcomes.css";
 import "./redesign.css";
 import "./bm.css";
+
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+  preload: true,
+});
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://cotiza.solucionesbm.online";
 const metaPixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID || "1960665047853972";
@@ -32,5 +40,5 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     {metaPixelId && <script id="meta-pixel-loader" dangerouslySetInnerHTML={{ __html: metaPixelLoader }} />}
     {clarityId && <script id="clarity-stub" dangerouslySetInnerHTML={{ __html: clarityStub }} />}
     {clarityId && <script id="clarity-loader" dangerouslySetInnerHTML={{ __html: clarityLoader }} />}
-  </head><body>{children}{metaPixelId && <noscript><img height="1" width="1" style={{display:"none"}} src={`https://www.facebook.com/tr?id=${encodeURIComponent(metaPixelId)}&ev=PageView&noscript=1`} alt="" /></noscript>}</body></html>;
+  </head><body className={poppins.className}>{children}{metaPixelId && <noscript><img height="1" width="1" style={{display:"none"}} src={`https://www.facebook.com/tr?id=${encodeURIComponent(metaPixelId)}&ev=PageView&noscript=1`} alt="" /></noscript>}</body></html>;
 }
