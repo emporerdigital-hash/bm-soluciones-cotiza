@@ -42,13 +42,13 @@ function PhotoViewer({ active, setActive }: { active: number | null; setActive: 
   </div>;
 }
 
-export function InstallationPhoto({ photoIndex, caption }: { photoIndex: number; caption: string }) {
+export function InstallationPhoto({ photoIndex, caption, compact = false, eager = false }: { photoIndex: number; caption: string; compact?: boolean; eager?: boolean }) {
   const [active, setActive] = useState<number | null>(null);
   const photo = photos[photoIndex];
 
   return <>
-    <button className="bm-feature-photo" type="button" onClick={() => setActive(photoIndex)} aria-label={`Ampliar: ${caption}`}>
-      <img src={photo.full} alt={photo.alt} width="1280" height="960" loading="lazy" decoding="async" />
+    <button className={`bm-feature-photo${compact ? " compact" : ""}`} type="button" onClick={() => setActive(photoIndex)} aria-label={`Ampliar: ${caption}`}>
+      <img src={compact ? photo.thumb : photo.full} alt={photo.alt} width="1280" height="960" loading={eager ? "eager" : "lazy"} decoding="async" />
       <span><b>{caption}</b><small>Ver fotografía completa</small></span>
     </button>
     <PhotoViewer active={active} setActive={setActive} />
@@ -57,12 +57,8 @@ export function InstallationPhoto({ photoIndex, caption }: { photoIndex: number;
 
 export function InstallationGallery() {
   const [active, setActive] = useState<number | null>(null);
-
   return <>
-    <div className="bm-gallery-heading">
-      <b>Instalaciones reales</b>
-      <span>Toca una foto para verla completa</span>
-    </div>
+    <div className="bm-gallery-heading"><b>Instalaciones reales</b><span>Toca una foto para verla completa</span></div>
     <div className="bm-real-gallery" aria-label="Galería de instalaciones realizadas por BM Soluciones">
       {photos.slice(0, 4).map((photo, index) =>
         <button key={photo.thumb} type="button" onClick={() => setActive(index)} aria-label={`Abrir fotografía ${index + 1} de ${photos.length}`}>

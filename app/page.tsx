@@ -22,6 +22,10 @@ export default function QuotePage() {
           <span><b>Sin compromiso</b><small>Decides tú</small></span>
           <span><b>Atención local</b><small>Guadalajara y ZM</small></span>
         </div>
+        <div className="bm-hero-photos">
+          <InstallationPhoto photoIndex={3} caption="Instalación comercial" compact eager />
+          <InstallationPhoto photoIndex={5} caption="Instalación residencial" compact eager />
+        </div>
       </div>
       <div className="direct-form-card" id="cotiza"><LeadForm variant="direct" /></div>
     </section>
@@ -36,6 +40,10 @@ export default function QuotePage() {
         <article><span>02</span><h3>Instalación profesional</h3><p>Personal de ingeniería, supervisión y técnicos para ejecutar correctamente el proyecto.</p></article>
         <article><span>03</span><h3>Monitoreo y soporte</h3><p>Configuración de monitoreo, revisión de generación y atención posterior a la instalación.</p></article>
       </div>
+      <div className="bm-feature-pair">
+        <InstallationPhoto photoIndex={2} caption="Sistema instalado y en operación" />
+        <InstallationPhoto photoIndex={4} caption="Proyecto solar visto desde el aire" />
+      </div>
     </section>
 
     <section className="bm-guarantee-section" aria-labelledby="bm-guarantee-title">
@@ -44,6 +52,7 @@ export default function QuotePage() {
         <h2 id="bm-guarantee-title">Garantías claras desde tu propuesta.</h2>
         <p>Las garantías de paneles e inversores se aplican conforme a cada fabricante. La instalación, mano de obra y servicios de BM quedan especificados en tu propuesta comercial o contrato.</p>
       </div>
+      <InstallationPhoto photoIndex={0} caption="Instalación real de BM Soluciones" />
       <ul>
         <li>Responsable técnico certificado por CONOCER</li>
         <li>Formación en NOM-001-SEDE-2012</li>
@@ -62,13 +71,11 @@ export default function QuotePage() {
         <li><b>2</b><span><strong>Revisamos tu caso</strong><small>Evaluamos consumo, inmueble y necesidades.</small></span></li>
         <li><b>3</b><span><strong>Recibe tu cotización</strong><small>Te explicamos la solución y sus garantías.</small></span></li>
       </ol>
+      <InstallationPhoto photoIndex={6} caption="Paneles instalados en inmueble residencial" />
     </section>
 
     <section className="bm-installations-section" aria-label="Trabajos realizados por BM Soluciones">
-      <div className="bm-section-heading">
-        <p className="eyebrow dark">TRABAJO REAL</p>
-        <h2>Instalaciones realizadas por BM.</h2>
-      </div>
+      <div className="bm-section-heading"><p className="eyebrow dark">TRABAJO REAL</p><h2>Más instalaciones realizadas por BM.</h2></div>
       <InstallationGallery />
     </section>
 
@@ -77,9 +84,6 @@ export default function QuotePage() {
       <a href="#cotiza">Cotizar ahora</a>
     </section>
 
-    <footer className="direct-footer">
-      <span>© 2026 BM Soluciones</span>
-      <span>Paneles solares para casas y negocios</span>
-    </footer>
+    <footer className="direct-footer"><span>© 2026 BM Soluciones</span><span>Paneles solares para casas y negocios</span></footer>
   </main>;
 }
