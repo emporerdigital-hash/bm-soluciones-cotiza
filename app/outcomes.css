@@ -1,0 +1,96 @@
+.solar-landing .benefit-hero{min-height:0;background:linear-gradient(90deg,#041c47f5 0%,#062b68df 44%,#062b6833 100%),url('/solar-hero.webp') center/cover}
+.solar-landing .hero-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(300px,.65fr);gap:32px;align-items:center;padding:54px 24px;min-height:0}
+.solar-landing .hero-copy{max-width:710px}
+.solar-landing h1{font-size:clamp(2.5rem,5.5vw,4.5rem);line-height:1.06;letter-spacing:-.035em;margin:0 0 22px}
+.solar-landing .sub{max-width:620px;font-size:1.125rem;line-height:1.65;margin:0 0 24px}
+.hero-outcomes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-width:650px;margin:0 0 24px}
+.hero-outcomes span{display:grid;gap:3px;padding:10px 11px;border:1px solid #ffffff35;border-radius:8px;background:#031b4466}
+.hero-outcomes b{font-size:.8rem;line-height:1.2;color:#fff}
+.hero-outcomes small{font-size:.68rem;line-height:1.3;color:#dcecf3}
+.solar-landing .eyebrow{font-size:.75rem;line-height:1.5}
+.hero-cta.button{display:inline-flex;width:auto;min-width:172px;min-height:50px;margin:0;padding:15px 30px}
+.hero-note{font-size:.8rem;line-height:1.5;color:#e1ebf5;margin:12px 0 0}
+.hero-panel-visual{position:relative;max-width:430px;justify-self:end;border:1px solid #ffffff35;border-radius:16px;padding:8px;background:#031b4470;box-shadow:0 18px 44px #00112655;overflow:hidden}
+.panel-mosaic{display:grid;grid-template-columns:1.35fr .65fr;grid-template-rows:1fr 1fr;gap:7px;height:230px}
+.panel-mosaic img{display:block;width:100%;height:100%;object-fit:cover;border-radius:9px}
+.panel-mosaic-main{grid-row:1 / -1}
+.hero-panel-badge{position:absolute;left:20px;bottom:62px;display:grid;gap:2px;padding:10px 13px;border-radius:8px;background:#041c47e8;color:#fff;box-shadow:0 8px 20px #00112655}
+.hero-panel-badge b{font-size:1rem;line-height:1.2}
+.hero-panel-badge span{font-size:.75rem;line-height:1.3;color:#d9edf5}
+.hero-benefits{display:flex;flex-wrap:wrap;gap:6px;margin:9px 2px 1px;color:#eff8fb;font-size:.7rem;line-height:1.3;font-weight:700}
+.hero-benefits span{padding:6px 8px;border:1px solid #ffffff35;border-radius:999px;background:#062b68aa}
+.solar-landing a:focus-visible,.solar-landing button:focus-visible,.solar-landing summary:focus-visible{outline:3px solid var(--sky);outline-offset:4px}
+.quote-section{scroll-margin-top:16px;background:#f1f5fa;color:var(--ink)}
+.quote-inner{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1fr);gap:64px;align-items:center;padding-top:52px;padding-bottom:52px}
+.quote-copy{max-width:440px}
+.quote-copy .eyebrow{color:var(--blue)}
+.quote-copy h2,.system-copy h2{font-family:"Century Gothic","Avenir Next","Segoe UI",sans-serif;font-size:clamp(1.875rem,3.5vw,2.875rem);font-weight:700;line-height:1.13;letter-spacing:-.035em;margin:0}
+.quote-copy>p:not(.eyebrow){font-size:1rem;line-height:1.6;color:#536377;margin:20px 0 16px}
+.quote-copy ul{display:grid;gap:12px;margin:0;padding:0;list-style:none}
+.quote-copy li{position:relative;padding-left:26px;color:var(--ink);font-size:1rem;line-height:1.5}
+.quote-copy li:before{position:absolute;left:0;content:'✓';color:var(--blue);font-weight:800}
+.quote-section .quiz{min-height:0;min-width:0;box-shadow:0 14px 40px #062b6812;border:1px solid #dce5ef;padding:28px}
+.quote-section .success{box-shadow:0 14px 40px #062b6812}
+.quote-section .form-copy{font-size:1rem;line-height:1.5;color:#536377;margin:0 0 16px}
+.quote-section .form-kicker,.quote-section .quiz-top{font-size:.75rem}
+.quote-section .answers button,.quote-section .answers.compact button{font-size:.875rem;line-height:1.4;min-height:48px}
+.quote-section .profile-step legend,.quote-section .form-field label{font-size:.875rem;line-height:1.4}
+.quote-section .form-field input{font-size:1rem}
+.quote-section .form-field small,.quote-section .receipt-prep,.quote-section .inline-trust,.quote-section .upload-actions button small,.quote-section .upload-status span,.quote-section .lead-saved small{font-size:.75rem;line-height:1.5}
+.quote-section .back,.quote-section .retry-upload,.quote-section .skip-receipt,.quote-section .upload-actions button b,.quote-section .upload-status b,.quote-section .lead-saved b{font-size:.875rem;line-height:1.4}
+.quote-section .receipt-prep{background:#f1f5fa;border-left-color:#a9bdd6}
+.quote-section .back{min-height:44px;padding-top:12px}
+.system-section{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:60px;align-items:center;padding-top:60px;padding-bottom:48px}
+.system-image{margin:0;overflow:hidden;border-radius:10px}
+.system-image img{display:block;width:100%;height:auto;aspect-ratio:1/1;object-fit:cover}
+.system-steps{counter-reset:system;list-style:none;display:grid;gap:20px;padding:0;margin:26px 0}
+.system-steps li{counter-increment:system;position:relative;padding-left:42px}
+.system-steps li:before{content:counter(system,decimal-leading-zero);position:absolute;left:0;top:2px;color:var(--red);font-size:.875rem;font-weight:800}
+.system-steps h3{font-size:1.125rem;line-height:1.35;margin:0 0 5px}
+.system-steps p{font-size:1rem;line-height:1.5;color:#536377;margin:0}
+.company-backing{font-size:.875rem;line-height:1.5;color:#536377;padding-top:18px;border-top:1px solid #dce5ef;margin:0}
+.solar-landing .faq{grid-template-columns:minmax(0,.7fr) minmax(0,1.3fr);gap:60px;padding-top:28px;padding-bottom:60px}
+.solar-landing .faq-head h2{font-size:2rem;line-height:1.2}
+.solar-landing .faq-list summary{font-size:1rem;line-height:1.5;gap:20px;align-items:center}
+.solar-landing .faq-list summary:after{flex:none}
+.solar-landing .faq-list details{padding:17px 0}
+.solar-landing .faq-list details p{font-size:1rem;line-height:1.6}
+.solar-landing .final-cta{padding:46px 24px}
+.solar-landing .final-cta h2{font-size:clamp(1.875rem,3vw,2.5rem);line-height:1.15}
+.solar-landing .final-cta p{font-size:1rem;margin:16px auto 20px}
+.solar-landing .final-cta .button{margin:0;min-width:172px}
+.solar-landing footer{font-size:.875rem;padding-top:28px;padding-bottom:28px;gap:24px;flex-wrap:wrap}
+@media(max-width:800px){
+  .solar-landing .nav{min-height:68px;height:auto;gap:16px;padding:12px 16px}
+  .solar-landing .nav-cta{font-size:.875rem;min-height:44px;display:flex;align-items:center;padding:10px 16px;flex-shrink:0}
+  .solar-landing .nav .brand{min-width:0}
+  .solar-landing .nav .brand img{width:170px;max-width:100%}
+  .solar-landing .benefit-hero{background:linear-gradient(90deg,#041c47eb,#062b68bb),url('/solar-hero-mobile.webp') center/cover}
+  .solar-landing .hero-grid{grid-template-columns:1fr;gap:20px;padding:28px 20px 30px}
+  .solar-landing .sub{font-size:1rem;line-height:1.55;margin-bottom:18px}
+  .hero-outcomes{gap:5px;margin-bottom:19px}
+  .hero-outcomes span{padding:8px 6px}
+  .hero-outcomes b{font-size:.65rem}
+  .hero-outcomes small{font-size:.57rem}
+  .hero-panel-visual{justify-self:stretch;max-width:none;padding:6px;border-radius:13px}
+  .panel-mosaic{height:190px;gap:5px}
+  .panel-mosaic img{border-radius:7px}
+  .hero-panel-badge{left:15px;bottom:53px;padding:8px 10px}
+  .hero-panel-badge b{font-size:.9rem}
+  .hero-panel-badge span{font-size:.68rem}
+  .hero-benefits{gap:4px;margin-top:7px;font-size:.64rem}
+  .hero-benefits span{padding:5px 6px}
+  .quote-inner{grid-template-columns:1fr;gap:24px;padding:30px 16px}
+  .quote-copy{max-width:none;padding:0 4px}
+  .quote-copy .eyebrow{margin-bottom:8px}
+  .quote-copy>p:not(.eyebrow){margin:12px 0 10px}
+  .quote-copy ul{gap:6px}
+  .quote-section .quiz{padding:23px 18px}
+  .system-section{grid-template-columns:1fr;gap:26px;padding:38px 20px}
+  .system-image img{aspect-ratio:16/9}
+  .solar-landing .faq{grid-template-columns:1fr;gap:18px;padding:0 20px 36px}
+  .solar-landing .final-cta{padding:36px 20px}
+  .solar-landing footer{gap:12px;padding:24px 20px}
+  .solar-landing footer p{margin:0;overflow-wrap:anywhere}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}

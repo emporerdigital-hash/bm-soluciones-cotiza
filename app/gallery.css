@@ -1,0 +1,9 @@
+.solar-gallery{max-width:1180px;margin:0 auto 50px;padding:0 24px;display:grid;grid-template-columns:1.45fr .8fr .8fr;grid-template-rows:210px 210px;gap:12px;position:relative}
+.solar-gallery figure{margin:0;overflow:hidden;background:#dce5e9}
+.solar-gallery .gallery-main{grid-row:1/3}
+.solar-gallery img{width:100%;height:100%;display:block;object-fit:cover;transition:transform .5s ease}
+.solar-gallery figure:hover img{transform:scale(1.025)}
+.gallery-message{position:absolute;left:48px;bottom:26px;max-width:430px;background:#062b68e8;color:#fff;padding:20px 24px;display:flex;flex-direction:column;gap:7px;backdrop-filter:blur(5px)}
+.gallery-message span{font-size:10px;letter-spacing:.16em;color:#ffc129;font-weight:800}
+.gallery-message strong{font-family:"Century Gothic","Avenir Next","Segoe UI",sans-serif;font-size:20px;line-height:1.25}
+@media(max-width:800px){.solar-gallery{padding:0 14px;margin-bottom:25px;grid-template-columns:1fr 1fr;grid-template-rows:260px 150px}.solar-gallery .gallery-main{grid-column:1/3;grid-row:auto}.gallery-message{left:28px;right:28px;bottom:178px;max-width:none;padding:16px 18px}.gallery-message strong{font-size:16px}}
