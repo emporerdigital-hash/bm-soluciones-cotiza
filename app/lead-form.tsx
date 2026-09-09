@@ -20,26 +20,12 @@ type LeadData = {
   city?: string;
 };
 
-type ContactField = "name" | "phone" | "email" | "city";
+type ContactField = "name" | "phone" | "email";
 type UploadState = "idle" | "uploading" | "success" | "error";
 type LeadFormProps = { variant?: "landing" | "direct" };
 
 const bills = ["Menos de $2,000", "$2,000 a $4,999", "$5,000 a $9,999", "$10,000 a $19,999", "Más de $20,000"];
-const properties = ["En mi casa", "En mi negocio"];
 const timings = ["Lo antes posible", "En 1 a 3 meses", "En 3 a 6 meses", "Solo estoy investigando"];
-const stepContent = [
-  ["¿Cuánto pagas por recibo de luz?", "Elige el rango más cercano."],
-  ["¿Dónde instalarías los paneles?", "Elige una opción en cada bloque y avanzamos automáticamente."],
-  ["¿Dónde enviamos tu cotización?", "Déjanos tus datos. El recibo lo puedes enviar después."],
-  ["¿Tienes tu recibo a la mano?", "Puedes subir una foto o PDF para precisar tu cotización."],
-] as const;
-const directStepContent = [
-  ["¿Cuánto pagas por recibo de luz?", "Con este dato estimamos si la energía solar puede hacer sentido para ti."],
-  ["Cuéntanos sobre tu proyecto", "Elige una opción en cada bloque y avanzamos automáticamente."],
-  ["¿Dónde enviamos tu cotización?", "Usaremos estos datos únicamente para preparar tu propuesta."],
-  ["Comparte tu recibo (opcional)", "Una foto o PDF nos ayuda a precisar el sistema y el ahorro."],
-] as const;
-
 const MAX_RECEIPT_SIZE = 20 * 1024 * 1024;
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const digits = (value = "") => value.replace(/\D/g, "");
@@ -70,18 +56,13 @@ export function LeadForm({ variant = "landing" }: LeadFormProps) {
   const receiptUploadToken = useRef("");
   const tracked = useRef(new Set<string>());
   const receiptUpload = useRef<{ id: string; file: File; promise: Promise<boolean> } | null>(null);
-  const profileAdvanceScheduled = useRef(false);
   const cameraInput = useRef<HTMLInputElement>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const nameInput = useRef<HTMLInputElement>(null);
   const phoneInput = useRef<HTMLInputElement>(null);
   const emailInput = useRef<HTMLInputElement>(null);
-  const cityInput = useRef<HTMLInputElement>(null);
-  const fieldRefs = { name: nameInput, phone: phoneInput, email: emailInput, city: cityInput };
+  const fieldRefs = { name: nameInput, phone: phoneInput, email: emailInput };
 
-  const [title, subtitle] = (variant === "direct" ? directStepContent : stepContent)[step];
-  const progress = step >= 3 ? 100 : Math.round((step + 1) / 3 * 100);
-  const stepLabel = leadAccepted || step === 3 ? "Recibo opcional" : `Paso ${Math.min(step + 1, 3)} de 3`;
   const isTestMode = () => {
     const value = new URLSearchParams(window.location.search).get("test");
     return value === "1" || value === "true";
@@ -98,7 +79,6 @@ export function LeadForm({ variant = "landing" }: LeadFormProps) {
   const goTo = (nextStep: number) => {
     setError("");
     setStep(nextStep);
-    if (nextStep === 2) trackOnce("BMContactStepViewed");
     if (nextStep === 3) trackOnce("BMOptionalReceiptViewed");
   };
 
@@ -112,39 +92,13 @@ export function LeadForm({ variant = "landing" }: LeadFormProps) {
       return;
     }
     trackOnce("BMBillQualified", { bill_range: selection });
-    window.setTimeout(() => goTo(1), 100);
-  };
-
-  const chooseProperty = (selection: string) => {
-    startForm();
-    setError("");
-    const nextData = { ...data, property: selection };
-    setData((current) => ({ ...current, property: selection }));
-    trackOnce("BMPropertySelected", { property_type: selection === "En mi casa" ? "home" : "business" });
-    if (nextData.timing && nextData.timing !== "Solo estoy investigando") advanceProfile();
   };
 
   const chooseTiming = (selection: string) => {
     startForm();
     setError("");
     setData((current) => ({ ...current, timing: selection }));
-    if (selection === "Solo estoy investigando") {
-      trackOnce("BMTimingDisqualified", { timeframe: "exploring" });
-      setDisqualified("timing");
-      return;
-    }
-    trackOnce("BMTimingQualified", { timeframe: selection });
-    if (data.property) advanceProfile();
-  };
-
-  const advanceProfile = () => {
-    if (profileAdvanceScheduled.current) return;
-    profileAdvanceScheduled.current = true;
-    trackOnce("BMProjectQualified");
-    window.setTimeout(() => {
-      profileAdvanceScheduled.current = false;
-      goTo(2);
-    }, 120);
+    trackOnce("BMTimingSelected", { timeframe: selection });
   };
 
   const uploadReceipt = async (file: File, id: string) => {
@@ -245,10 +199,9 @@ export function LeadForm({ variant = "landing" }: LeadFormProps) {
     const errors: Partial<Record<ContactField, string>> = {};
     if ((data.name || "").trim().split(/\s+/).filter(Boolean).length < 2) errors.name = "Escribe tu nombre y al menos un apellido.";
     if (digits(data.phone).length !== 10) errors.phone = "Escribe un teléfono de 10 dígitos.";
-    if (!emailPattern.test((data.email || "").trim())) errors.email = "Escribe un correo electrónico válido.";
-    if ((data.city || "").trim().length < 2) errors.city = "Escribe tu municipio o ciudad.";
+    if ((data.email || "").trim() && !emailPattern.test((data.email || "").trim())) errors.email = "Escribe un correo válido o déjalo vacío.";
     setFieldErrors(errors);
-    const firstInvalid = (["name", "phone", "email", "city"] as ContactField[]).find((field) => errors[field]);
+    const firstInvalid = (["name", "phone", "email"] as ContactField[]).find((field) => errors[field]);
     if (firstInvalid) window.requestAnimationFrame(() => fieldRefs[firstInvalid].current?.focus());
     return Object.keys(errors).length === 0;
   };
@@ -265,6 +218,11 @@ export function LeadForm({ variant = "landing" }: LeadFormProps) {
     if (submitLock.current) return;
     if (!validateContact()) {
       trackOnce("BMContactValidationError");
+      return;
+    }
+    if (!data.bill || !data.timing) {
+      setError("Selecciona cuánto pagas y cuándo te gustaría instalar.");
+      trackOnce("BMQuoteAnswersMissing");
       return;
     }
     submitLock.current = true;
@@ -323,13 +281,13 @@ export function LeadForm({ variant = "landing" }: LeadFormProps) {
         try {
           window.fbq?.("track", "Lead", {
             content_name: "Cotización solar BM Soluciones",
-            content_category: data.property === "En mi casa" ? "home" : "business",
+            content_category: "solar_quote",
             currency: "MXN",
             lead_id: eventId.current,
           }, { eventID: eventId.current });
         } catch { /* Tracking must never block the confirmation. */ }
       }
-      goTo(3);
+      setStep(3);
     } catch {
       submitLock.current = false;
       setSending(false);
@@ -361,53 +319,38 @@ export function LeadForm({ variant = "landing" }: LeadFormProps) {
     </div>;
   }
 
-  return <div className={`quiz ${variant === "direct" ? "quiz-direct" : ""}`} onPointerDown={startForm}>
-    <div className="quiz-top"><span>{stepLabel}</span><strong aria-label={`${progress}% completado`}>{progress}%</strong></div>
-    <div className="progress" aria-hidden="true"><i style={{ width: `${progress}%` }} /></div>
-    <p className="form-kicker">Cotización solar personalizada</p>
-    <h2>{title}</h2>
-    <p className="form-copy">{subtitle}</p>
-
-    {step === 0 && <>
-      <div className="answers">{bills.map((option) => <button type="button" key={option} onClick={() => chooseBill(option)} className={data.bill === option ? "selected" : ""}><span>{option}</span><b aria-hidden="true">›</b></button>)}</div>
-      <p className="receipt-prep">Puedes enviar tu recibo después. <b>No es necesario para empezar.</b></p>
-    </>}
-
-    {step === 1 && <div className="profile-step">
-      <fieldset><legend>¿Dónde instalarías los paneles?</legend><div className="answers compact">{properties.map((option) => <button type="button" key={option} onClick={() => chooseProperty(option)} className={data.property === option ? "selected" : ""} aria-pressed={data.property === option}><span>{option}</span><b aria-hidden="true">✓</b></button>)}</div></fieldset>
-      <fieldset><legend>¿Cuándo te gustaría comenzar?</legend><div className="answers compact timing-options">{timings.map((option) => <button type="button" key={option} onClick={() => chooseTiming(option)} className={data.timing === option ? "selected" : ""} aria-pressed={data.timing === option}><span>{option}</span><b aria-hidden="true">✓</b></button>)}</div></fieldset>
-      <p className="selection-hint">Elige una opción en cada bloque. Al completar los dos, pasamos solos a tus datos.</p>
-    </div>}
-
-    {step === 2 && <form className="single-input contact-fields" noValidate onSubmit={(event) => { event.preventDefault(); void submit(); }}>
-      <div className="form-field"><label htmlFor="lead-name">Nombre y apellido</label><input ref={nameInput} id="lead-name" autoFocus autoComplete="name" enterKeyHint="next" placeholder="Ej. Ana Martínez" aria-invalid={Boolean(fieldErrors.name)} value={data.name || ""} onChange={(event) => updateContact("name", event.target.value)} />{fieldErrors.name && <small role="alert">{fieldErrors.name}</small>}</div>
-      <div className="form-field"><label htmlFor="lead-phone">Teléfono</label><input ref={phoneInput} id="lead-phone" type="tel" inputMode="tel" autoComplete="tel-national" enterKeyHint="next" maxLength={14} placeholder="10 dígitos" aria-invalid={Boolean(fieldErrors.phone)} value={data.phone || ""} onChange={(event) => updateContact("phone", event.target.value)} />{fieldErrors.phone && <small role="alert">{fieldErrors.phone}</small>}</div>
-      <div className="form-field"><label htmlFor="lead-email">Correo electrónico</label><input ref={emailInput} id="lead-email" type="email" inputMode="email" autoComplete="email" enterKeyHint="next" placeholder="correo@ejemplo.com" aria-invalid={Boolean(fieldErrors.email)} value={data.email || ""} onChange={(event) => updateContact("email", event.target.value)} />{fieldErrors.email && <small role="alert">{fieldErrors.email}</small>}</div>
-      <div className="form-field"><label htmlFor="lead-city">Municipio o ciudad</label><input ref={cityInput} id="lead-city" autoComplete="address-level2" enterKeyHint="send" list="service-area-cities" placeholder="Ej. Guadalajara o Zapopan" aria-invalid={Boolean(fieldErrors.city)} value={data.city || ""} onChange={(event) => updateContact("city", event.target.value)} />{fieldErrors.city && <small role="alert">{fieldErrors.city}</small>}</div>
-      <datalist id="service-area-cities"><option value="Monterrey" /><option value="Guadalupe" /><option value="Apodaca" /><option value="San Nicolás de los Garza" /><option value="General Escobedo" /><option value="Santa Catarina" /><option value="San Pedro Garza García" /><option value="García" /><option value="Juárez" /><option value="Santiago" /><option value="Saltillo" /><option value="Ramos Arizpe" /><option value="Arteaga" /></datalist>
-      <button type="submit" disabled={sending}>{sending ? "Enviando cotización…" : "Solicitar mi cotización"}</button>
-    </form>}
-
-    {step === 3 && <div className="upload optional-receipt">
-      {leadAccepted && <div className="lead-saved" role="status"><span aria-hidden="true">✓</span><div><b>Tu solicitud ya fue enviada</b><small>Puedes compartir el recibo ahora o después.</small></div></div>}
-      <input ref={cameraInput} className="receipt-input" type="file" accept="image/jpeg,image/png,image/heic,image/heif,image/webp,.jpg,.jpeg,.png,.heic,.heif,.webp" capture="environment" aria-label="Tomar foto del recibo de CFE" onChange={(event) => selectReceipt(event.target.files?.[0] || null)} />
-      <input ref={fileInput} className="receipt-input" type="file" accept="image/jpeg,image/png,image/heic,image/heif,image/webp,application/pdf,.jpg,.jpeg,.png,.heic,.heif,.webp,.pdf" aria-label="Elegir archivo del recibo de CFE" onChange={(event) => selectReceipt(event.target.files?.[0] || null)} />
-      <div className="upload-actions">
-        <button type="button" onClick={() => openReceiptPicker(cameraInput)}><span aria-hidden="true">▣</span><b>Tomar foto</b><small>Usar la cámara</small></button>
-        <button type="button" onClick={() => openReceiptPicker(fileInput)}><span aria-hidden="true">↑</span><b>Elegir archivo</b><small>Foto o PDF</small></button>
+  if (leadAccepted && step === 3) {
+    return <div className={`quiz ${variant === "direct" ? "quiz-direct" : ""}`}>
+      <p className="form-kicker">Solicitud enviada</p><h2>Comparte tu recibo (opcional)</h2>
+      <p className="form-copy">Una foto o PDF nos ayuda a precisar el sistema y el ahorro.</p>
+      <div className="upload optional-receipt">
+        <div className="lead-saved" role="status"><span aria-hidden="true">✓</span><div><b>Tu solicitud ya fue enviada</b><small>Puedes compartir el recibo ahora o después.</small></div></div>
+        <input ref={cameraInput} className="receipt-input" type="file" accept="image/jpeg,image/png,image/heic,image/heif,image/webp,.jpg,.jpeg,.png,.heic,.heif,.webp" capture="environment" aria-label="Tomar foto del recibo de CFE" onChange={(event) => selectReceipt(event.target.files?.[0] || null)} />
+        <input ref={fileInput} className="receipt-input" type="file" accept="image/jpeg,image/png,image/heic,image/heif,image/webp,application/pdf,.jpg,.jpeg,.png,.heic,.heif,.webp,.pdf" aria-label="Elegir archivo del recibo de CFE" onChange={(event) => selectReceipt(event.target.files?.[0] || null)} />
+        <div className="upload-actions"><button type="button" onClick={() => openReceiptPicker(cameraInput)}><span aria-hidden="true">▣</span><b>Tomar foto</b><small>Usar la cámara</small></button><button type="button" onClick={() => openReceiptPicker(fileInput)}><span aria-hidden="true">↑</span><b>Elegir archivo</b><small>Foto o PDF</small></button></div>
+        {data.receipt && <div className={`upload-status ${uploadState}`} role="status" aria-live="polite"><div><b>{uploadState === "uploading" ? "Subiendo recibo…" : uploadState === "success" ? "Recibo listo" : "No se pudo subir"}</b><span>{data.receipt.name} · {formatSize(data.receipt.size)}</span></div>{uploadState === "uploading" && <i aria-hidden="true" />}{uploadState === "success" && <strong aria-hidden="true">✓</strong>}</div>}
+        {uploadError && <p className="form-error" role="alert">{uploadError}</p>}
+        {uploadState === "error" && data.receipt && <button type="button" className="retry-upload" onClick={retryReceipt}>Reintentar carga</button>}
+        {uploadState !== "uploading" && uploadState !== "success" && <button type="button" className="skip-receipt" onClick={skipReceipt}>Ahora no, terminar sin recibo</button>}
       </div>
-      {data.receipt && <div className={`upload-status ${uploadState}`} role="status" aria-live="polite">
-        <div><b>{uploadState === "uploading" ? "Subiendo recibo…" : uploadState === "success" ? "Recibo listo" : "No se pudo subir"}</b><span>{data.receipt.name} · {formatSize(data.receipt.size)}</span></div>
-        {uploadState === "uploading" && <i aria-hidden="true" />}
-        {uploadState === "success" && <strong aria-hidden="true">✓</strong>}
-      </div>}
-      {uploadError && <p className="form-error" role="alert">{uploadError}</p>}
-      {uploadState === "error" && data.receipt && <button type="button" className="retry-upload" onClick={retryReceipt}>Reintentar carga</button>}
-      {uploadState !== "uploading" && uploadState !== "success" && <button type="button" className="skip-receipt" onClick={skipReceipt}>Ahora no, continuar sin recibo</button>}
-    </div>}
+    </div>;
+  }
 
-    {step > 0 && !leadAccepted && <button type="button" className="back" onClick={() => { setError(""); profileAdvanceScheduled.current = false; goTo(Math.max(0, step - 1)); }}>← Regresar</button>}
-    {error && <p className="form-error final-error" role="alert">{error}</p>}
-    <div className="inline-trust"><span>✓ Cotización sin costo</span><span>✓ Guadalajara y Zona Metropolitana</span><span>✓ Datos protegidos</span></div>
+  return <div className={`quiz ${variant === "direct" ? "quiz-direct" : ""}`} onPointerDown={startForm}>
+    <p className="form-kicker">Cotización solar personalizada</p><h2>Solicita tu cotización</h2>
+    <p className="form-copy">Completa tus datos y dos preguntas. Todo está en esta misma pantalla.</p>
+    <form className="single-page-quote" noValidate onSubmit={(event) => { event.preventDefault(); void submit(); }}>
+      <div className="contact-fields single-page-contact">
+        <div className="form-field"><label htmlFor="lead-name">¿Cómo te llamas?</label><input ref={nameInput} id="lead-name" autoFocus autoComplete="given-name" enterKeyHint="next" placeholder="Ej. Ana" aria-invalid={Boolean(fieldErrors.name)} value={data.name || ""} onChange={(event) => updateContact("name", event.target.value)} />{fieldErrors.name && <small role="alert">{fieldErrors.name}</small>}</div>
+        <div className="form-field"><label htmlFor="lead-phone">WhatsApp</label><input ref={phoneInput} id="lead-phone" type="tel" inputMode="tel" autoComplete="tel-national" enterKeyHint="next" maxLength={14} placeholder="10 dígitos" aria-invalid={Boolean(fieldErrors.phone)} value={data.phone || ""} onChange={(event) => updateContact("phone", event.target.value)} />{fieldErrors.phone && <small role="alert">{fieldErrors.phone}</small>}</div>
+        <div className="form-field optional-email"><label htmlFor="lead-email">Correo <span>(opcional)</span></label><input ref={emailInput} id="lead-email" type="email" inputMode="email" autoComplete="email" enterKeyHint="next" placeholder="correo@ejemplo.com" aria-invalid={Boolean(fieldErrors.email)} value={data.email || ""} onChange={(event) => updateContact("email", event.target.value)} />{fieldErrors.email && <small role="alert">{fieldErrors.email}</small>}</div>
+      </div>
+      <fieldset><legend>¿Cuánto pagas por recibo de luz?</legend><div className="answers compact single-page-options">{bills.map((option) => <button type="button" key={option} onClick={() => chooseBill(option)} className={data.bill === option ? "selected" : ""} aria-pressed={data.bill === option}><span>{option}</span></button>)}</div></fieldset>
+      <fieldset><legend>¿Cuándo te gustaría instalar?</legend><div className="answers compact single-page-options">{timings.map((option) => <button type="button" key={option} onClick={() => chooseTiming(option)} className={data.timing === option ? "selected" : ""} aria-pressed={data.timing === option}><span>{option}</span></button>)}</div></fieldset>
+      {error && <p className="form-error final-error" role="alert">{error}</p>}
+      <button className="single-page-submit" type="submit" disabled={sending}>{sending ? "Enviando cotización…" : "Recibir mi cotización"}</button>
+    </form>
+    <p className="location-note">Tu ubicación se detecta automáticamente para preparar la propuesta. No necesitas escribirla.</p>
+    <div className="inline-trust"><span>✓ Cotización sin costo</span><span>✓ Datos protegidos</span><span>✓ Sin compromiso</span></div>
   </div>;
 }

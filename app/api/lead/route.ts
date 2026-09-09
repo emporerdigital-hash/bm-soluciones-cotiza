@@ -82,24 +82,29 @@ export async function POST(request: Request) {
     const phone = digits(asText(raw.phone, 32)).slice(-10);
     const phoneE164 = phone ? `52${phone}` : "";
     const email = asText(raw.email, 320).toLowerCase();
-    const city = asText(raw.city, 100);
-    const state = "Jalisco";
+    const decodeHeader = (name: string, maxLength = 100) => {
+      const value = request.headers.get(name) || "";
+      try { return asText(decodeURIComponent(value), maxLength); } catch { return asText(value, maxLength); }
+    };
+    const city = asText(raw.city, 100) || decodeHeader("x-vercel-ip-city");
+    const municipality = city;
+    const regionCode = decodeHeader("x-vercel-ip-country-region", 20).toLowerCase();
+    const state = regionCode || "jalisco";
+    const postalCode = decodeHeader("x-vercel-ip-postal-code", 20);
+    const countryCode = (decodeHeader("x-vercel-ip-country", 8) || "mx").toLowerCase();
+    const countryName = countryCode === "mx" ? "México" : countryCode.toUpperCase();
     const billRange = BILL_RANGES[asText(raw.bill)] || "";
     const timeframe = TIMEFRAMES[asText(raw.timing)] || "";
-    const propertyType = raw.property === "En mi casa" ? "home" : raw.property === "En mi negocio" ? "business" : "";
+    const propertyType = "not_collected";
     const receiptMeta = raw.receiptMeta && typeof raw.receiptMeta === "object" ? raw.receiptMeta : null;
     const receiptReceived = false;
 
     const invalid = !firstName
-      || !lastName
       || phone.length !== 10
-      || !emailPattern.test(email)
-      || city.length < 2
-      || !propertyType
+      || (email.length > 0 && !emailPattern.test(email))
       || !billRange
       || billRange === "under_2000"
-      || !timeframe
-      || timeframe === "exploring";
+      || !timeframe;
 
     if (invalid) {
       return Response.json({ ok: false, error: "invalid_lead_data" }, { status: 400, headers: { "Cache-Control": "no-store" } });
@@ -144,14 +149,15 @@ export async function POST(request: Request) {
     const clientIpAddress = (request.headers.get("cf-connecting-ip") || request.headers.get("x-forwarded-for") || "").split(",")[0].trim();
     const clientUserAgent = request.headers.get("user-agent") || "";
 
-    const [em, ph, fn, ln, ct, st, country, externalId] = await Promise.all([
-      sha256(email),
+    const [em, ph, fn, ln, ct, st, zp, country, externalId] = await Promise.all([
+      email ? sha256(email) : "",
       sha256(phoneE164),
       sha256(firstName),
-      sha256(lastName),
-      sha256(city),
-      sha256(state),
-      sha256("mx"),
+      lastName ? sha256(lastName) : "",
+      city ? sha256(city) : "",
+      state ? sha256(state) : "",
+      postalCode ? sha256(postalCode) : "",
+      sha256(countryCode),
       sha256(uuid),
     ]);
 
@@ -205,7 +211,7 @@ export async function POST(request: Request) {
       ln,
       ct,
       st,
-      zp: "",
+      zp,
       country,
       external_id: externalId,
       client_ip_address: clientIpAddress,
@@ -230,7 +236,7 @@ export async function POST(request: Request) {
         phone,
         phoneE164,
         email,
-        company: propertyType === "home" ? "Particular" : "Negocio",
+        company: "No especificado",
         preferredContactTime: "any",
       },
       answers: {
@@ -240,11 +246,13 @@ export async function POST(request: Request) {
         timeframe,
         paymentPreference: "not_collected",
         roofType: "not_collected",
+        municipality,
         city,
         state,
-        postalCode: "",
-        country: "México",
-        countryCode: "mx",
+        regionCode,
+        postalCode,
+        country: countryName,
+        countryCode,
       },
       receiptExpected: true,
       receiptStatus: "pending",
@@ -269,13 +277,13 @@ export async function POST(request: Request) {
         action_source: "website",
         event_source_url: sourceUrl,
         user_data: {
-          em: [em],
+          em: em ? [em] : [],
           ph: [ph],
           fn: [fn],
-          ln: [ln],
-          ct: [ct],
-          st: [st],
-          zp: [],
+          ln: ln ? [ln] : [],
+          ct: ct ? [ct] : [],
+          st: st ? [st] : [],
+          zp: zp ? [zp] : [],
           country: [country],
           external_id: [externalId],
           client_ip_address: clientIpAddress,
