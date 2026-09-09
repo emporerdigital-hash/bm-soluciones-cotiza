@@ -101,7 +101,7 @@ export async function POST(request: Request) {
 
     const invalid = !firstName
       || phone.length !== 10
-      || (email.length > 0 && !emailPattern.test(email))
+      || !emailPattern.test(email)
       || !billRange
       || billRange === "under_2000"
       || !timeframe;

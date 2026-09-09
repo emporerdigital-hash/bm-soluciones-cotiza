@@ -199,7 +199,7 @@ export function LeadForm({ variant = "landing" }: LeadFormProps) {
     const errors: Partial<Record<ContactField, string>> = {};
     if ((data.name || "").trim().split(/\s+/).filter(Boolean).length < 2) errors.name = "Escribe tu nombre y al menos un apellido.";
     if (digits(data.phone).length !== 10) errors.phone = "Escribe un teléfono de 10 dígitos.";
-    if ((data.email || "").trim() && !emailPattern.test((data.email || "").trim())) errors.email = "Escribe un correo válido o déjalo vacío.";
+    if (!emailPattern.test((data.email || "").trim())) errors.email = "Escribe un correo electrónico válido.";
     setFieldErrors(errors);
     const firstInvalid = (["name", "phone", "email"] as ContactField[]).find((field) => errors[field]);
     if (firstInvalid) window.requestAnimationFrame(() => fieldRefs[firstInvalid].current?.focus());
@@ -343,7 +343,7 @@ export function LeadForm({ variant = "landing" }: LeadFormProps) {
       <div className="contact-fields single-page-contact">
         <div className="form-field"><label htmlFor="lead-name">¿Cómo te llamas?</label><input ref={nameInput} id="lead-name" autoFocus autoComplete="given-name" enterKeyHint="next" placeholder="Ej. Ana" aria-invalid={Boolean(fieldErrors.name)} value={data.name || ""} onChange={(event) => updateContact("name", event.target.value)} />{fieldErrors.name && <small role="alert">{fieldErrors.name}</small>}</div>
         <div className="form-field"><label htmlFor="lead-phone">WhatsApp</label><input ref={phoneInput} id="lead-phone" type="tel" inputMode="tel" autoComplete="tel-national" enterKeyHint="next" maxLength={14} placeholder="10 dígitos" aria-invalid={Boolean(fieldErrors.phone)} value={data.phone || ""} onChange={(event) => updateContact("phone", event.target.value)} />{fieldErrors.phone && <small role="alert">{fieldErrors.phone}</small>}</div>
-        <div className="form-field optional-email"><label htmlFor="lead-email">Correo <span>(opcional)</span></label><input ref={emailInput} id="lead-email" type="email" inputMode="email" autoComplete="email" enterKeyHint="next" placeholder="correo@ejemplo.com" aria-invalid={Boolean(fieldErrors.email)} value={data.email || ""} onChange={(event) => updateContact("email", event.target.value)} />{fieldErrors.email && <small role="alert">{fieldErrors.email}</small>}</div>
+        <div className="form-field email-wide"><label htmlFor="lead-email">Correo electrónico</label><input ref={emailInput} id="lead-email" type="email" inputMode="email" autoComplete="email" enterKeyHint="next" placeholder="correo@ejemplo.com" aria-invalid={Boolean(fieldErrors.email)} value={data.email || ""} onChange={(event) => updateContact("email", event.target.value)} />{fieldErrors.email && <small role="alert">{fieldErrors.email}</small>}</div>
       </div>
       <fieldset><legend>¿Cuánto pagas por recibo de luz?</legend><div className="answers compact single-page-options">{bills.map((option) => <button type="button" key={option} onClick={() => chooseBill(option)} className={data.bill === option ? "selected" : ""} aria-pressed={data.bill === option}><span>{option}</span></button>)}</div></fieldset>
       <fieldset><legend>¿Cuándo te gustaría instalar?</legend><div className="answers compact single-page-options">{timings.map((option) => <button type="button" key={option} onClick={() => chooseTiming(option)} className={data.timing === option ? "selected" : ""} aria-pressed={data.timing === option}><span>{option}</span></button>)}</div></fieldset>
