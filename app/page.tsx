@@ -50,14 +50,15 @@ export default function QuotePage() {
       <div>
         <p className="eyebrow">RESPALDO BM</p>
         <h2 id="bm-guarantee-title">Garantías claras desde tu propuesta.</h2>
-        <p>Las garantías de paneles e inversores se aplican conforme a cada fabricante. La instalación, mano de obra y servicios de BM quedan especificados en tu propuesta comercial o contrato.</p>
+        <p>Tu sistema queda respaldado con garantías claras en equipos, estructura e instalación, especificadas en tu propuesta comercial o contrato.</p>
       </div>
       <InstallationPhoto photoIndex={0} caption="Instalación real de BM Soluciones" />
       <ul>
-        <li>Responsable técnico certificado por CONOCER</li>
-        <li>Formación en NOM-001-SEDE-2012</li>
-        <li>Revisión de equipos, conexiones y alertas</li>
-        <li>Recomendaciones de limpieza y mantenimiento</li>
+        <li>Paneles: 12 años contra defectos de fábrica</li>
+        <li>Inversor central: 5 años</li>
+        <li>Microinversor: 12 años</li>
+        <li>Estructura: 12 años</li>
+        <li>Instalación: 3 años, con mantenimiento preventivo al menos 2 veces al año</li>
       </ul>
     </section>
 
