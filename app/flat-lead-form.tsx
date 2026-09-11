@@ -195,9 +195,9 @@ export function FlatLeadForm({ variant = "landing" }: FlatLeadFormProps) {
   }
 
   return <div className={`${styles.card} ${variant === "direct" ? styles.direct : ""}`} onPointerDown={trackFormStart}>
-    <p className={styles.kicker}>{variant === "direct" ? "Cotiza desde tu anuncio" : "Cotización solar personalizada"}</p>
-    <h3>{variant === "direct" ? "Recibe tu cotización solar" : "Solicita tu cotización"}</h3>
-    <p className={styles.intro}>{variant === "direct" ? "Déjanos tus datos y responde dos preguntas. No necesitas subir tu recibo." : "Completa tus datos y dos preguntas. Todo está en esta misma pantalla."}</p>
+    <p className={styles.kicker}>{variant === "direct" ? "Análisis solar rápido" : "Cotización solar personalizada"}</p>
+    <h3>{variant === "direct" ? "Descubre cuánto podrías ahorrar en luz" : "Solicita tu cotización"}</h3>
+    <p className={styles.intro}>{variant === "direct" ? "Déjanos tus datos y responde dos preguntas para estimar si la energía solar puede ayudarte a reducir tu recibo." : "Completa tus datos y dos preguntas. Todo está en esta misma pantalla."}</p>
 
     <form noValidate onSubmit={(event) => { event.preventDefault(); void submit(); }}>
       <div className={styles.contactGrid}>
