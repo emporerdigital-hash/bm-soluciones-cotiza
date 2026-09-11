@@ -28,6 +28,7 @@ type ReceiptMeta = {
 };
 
 type LeadInput = {
+  formVariant?: string;
   bill?: string;
   property?: string;
   timing?: string;
@@ -77,6 +78,7 @@ export async function POST(request: Request) {
   try {
     const raw = await readInput(request);
     const requestUrl = new URL(request.url);
+    const isFlatForm = asText(raw.formVariant, 32) === "flat";
     const name = asText(raw.name);
     const { firstName, lastName } = parseName(name);
     const phone = digits(asText(raw.phone, 32)).slice(-10);
@@ -104,7 +106,8 @@ export async function POST(request: Request) {
       || !emailPattern.test(email)
       || !billRange
       || billRange === "under_2000"
-      || !timeframe;
+      || !timeframe
+      || (isFlatForm && timeframe === "exploring");
 
     if (invalid) {
       return Response.json({ ok: false, error: "invalid_lead_data" }, { status: 400, headers: { "Cache-Control": "no-store" } });
@@ -146,6 +149,7 @@ export async function POST(request: Request) {
     const fbp = readCookie(cookies, "_fbp");
     const fbclid = params.get("fbclid") || "";
     const fbc = readCookie(cookies, "_fbc") || (fbclid ? `fb.1.${Date.now()}.${fbclid}` : "");
+    const testEventCode = asText(params.get("test_event_code"), 160);
     const clientIpAddress = (request.headers.get("cf-connecting-ip") || request.headers.get("x-forwarded-for") || "").split(",")[0].trim();
     const clientUserAgent = request.headers.get("user-agent") || "";
 
@@ -161,12 +165,13 @@ export async function POST(request: Request) {
       sha256(uuid),
     ]);
 
-    const leadScore = Math.min(100,
+    const calculatedLeadScore = Math.min(100,
       (billRange === "20000_plus" ? 50 : billRange === "10000_19999" ? 45 : billRange === "5000_9999" ? 40 : 30)
       + (timeframe === "asap" ? 30 : timeframe === "1_3_months" ? 25 : 15)
       + 20,
     );
-    const qualified = leadScore >= 70;
+    const leadScore = isFlatForm ? Math.max(70, calculatedLeadScore) : calculatedLeadScore;
+    const qualified = isFlatForm || leadScore >= 70;
     const priority = qualified ? "quote_now" : leadScore >= 50 ? "warm" : "nurture";
 
     const requestedReceiptId = asText(receiptMeta?.id, 160);
@@ -174,11 +179,11 @@ export async function POST(request: Request) {
     // Bind the upload permission to this lead. The file is optional and is
     // uploaded after the lead is accepted, so do not publish a download URL
     // until Vercel Blob confirms that the object exists.
-    const receiptUploadToken = createReceiptToken(receiptId, "upload", 2 * 60 * 60, { eventId });
+    const receiptUploadToken = isFlatForm ? "" : createReceiptToken(receiptId, "upload", 2 * 60 * 60, { eventId });
     const receipt = {
       received: receiptReceived,
-      status: "pending",
-      id: receiptId,
+      status: isFlatForm ? "not_requested" : "pending",
+      id: isFlatForm ? "" : receiptId,
       fileName: asText(receiptMeta?.fileName, 260),
       contentType: asText(receiptMeta?.contentType, 120),
       size: Number(receiptMeta?.size || 0),
@@ -201,6 +206,8 @@ export async function POST(request: Request) {
       utmCampaign: params.get("utm_campaign") || "",
       utmContent: params.get("utm_content") || "",
       utmTerm: params.get("utm_term") || "",
+      testEventCode,
+      formVariant: isFlatForm ? "flat" : "standard",
     };
 
     const metaMatch = {
@@ -224,9 +231,10 @@ export async function POST(request: Request) {
       source: "bm_soluciones_quote_form",
       eventName: "Lead",
       eventId,
-      qualifiedEventName: qualified ? "QualifiedLead" : "",
-      qualifiedEventId: qualified ? `qualified_${uuid}` : "",
+      qualifiedEventName: !isFlatForm && qualified ? "QualifiedLead" : "",
+      qualifiedEventId: !isFlatForm && qualified ? `qualified_${uuid}` : "",
       eventTime,
+      testEventCode,
       upsertKey: uuid,
       deduplicationKey: `lead:${uuid}`,
       contact: {
@@ -254,14 +262,14 @@ export async function POST(request: Request) {
         country: countryName,
         countryCode,
       },
-      receiptExpected: true,
-      receiptStatus: "pending",
+      receiptExpected: !isFlatForm,
+      receiptStatus: isFlatForm ? "not_requested" : "pending",
       receiptUrl: "",
       leadScore,
       qualified,
       quoteReady: true,
       priority,
-      crmStatus: receiptReceived ? "Expediente completo" : "Recibo pendiente",
+      crmStatus: isFlatForm ? "Nuevo lead" : receiptReceived ? "Expediente completo" : "Recibo pendiente",
       tracking,
       receipt,
       server: {
@@ -276,6 +284,7 @@ export async function POST(request: Request) {
         event_id: eventId,
         action_source: "website",
         event_source_url: sourceUrl,
+        ...(testEventCode ? { test_event_code: testEventCode } : {}),
         user_data: {
           em: em ? [em] : [],
           ph: [ph],
