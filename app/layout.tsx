@@ -9,6 +9,7 @@ import "./gallery.css";
 import "./outcomes.css";
 import "./redesign.css";
 import "./bm.css";
+import "./bm-hybrid.css";
 
 const poppins = Poppins({
   subsets: ["latin"],

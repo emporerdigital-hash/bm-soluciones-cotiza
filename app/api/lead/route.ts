@@ -6,8 +6,11 @@ export const maxDuration = 15;
 
 const BILL_RANGES: Record<string, string> = {
   "Menos de $2,000": "under_2000",
+  "$2,000 a $5,000": "2000_4999",
   "$2,000 a $4,999": "2000_4999",
+  "$5,000 a $10,000": "5000_9999",
   "$5,000 a $9,999": "5000_9999",
+  "Más de $10,000": "10000_plus",
   "$10,000 a $19,999": "10000_19999",
   "Más de $20,000": "20000_plus",
 };
@@ -45,9 +48,22 @@ type LeadInput = {
 
 const asText = (value: unknown, maxLength = 256) => typeof value === "string" ? value.trim().slice(0, maxLength) : "";
 const normalize = (value: string) => value.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").trim().toLowerCase();
-const sha256 = async (value: string) => Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(normalize(value))))).map((byte) => byte.toString(16).padStart(2, "0")).join("");
+const sha256 = async (value: string) => {
+  const normalized = normalize(value);
+  if (!normalized) return "";
+  return Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(normalized)))).map((byte) => byte.toString(16).padStart(2, "0")).join("");
+};
 const digits = (value: string) => value.replace(/\D/g, "");
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MAX_RECEIPT_SIZE = 20 * 1024 * 1024;
+const RECEIPT_TYPES = new Set([
+  "application/pdf",
+  "image/heic",
+  "image/heif",
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+]);
 
 const readCookie = (header: string, name: string) => {
   const raw = header.split(";").map((part) => part.trim()).find((part) => part.startsWith(`${name}=`))?.slice(name.length + 1) || "";
@@ -100,10 +116,23 @@ export async function POST(request: Request) {
     const propertyType = "not_collected";
     const receiptMeta = raw.receiptMeta && typeof raw.receiptMeta === "object" ? raw.receiptMeta : null;
     const receiptReceived = false;
+    const requestedReceiptId = asText(receiptMeta?.id, 160);
+    const receiptFileName = asText(receiptMeta?.fileName, 260);
+    const receiptContentType = asText(receiptMeta?.contentType, 120).toLowerCase();
+    const receiptSize = Number(receiptMeta?.size || 0);
+    const receiptMetadataInvalid = isFlatForm && (
+      !/^[a-zA-Z0-9_-]{8,160}$/.test(requestedReceiptId)
+      || !receiptFileName
+      || !RECEIPT_TYPES.has(receiptContentType)
+      || !Number.isFinite(receiptSize)
+      || receiptSize <= 0
+      || receiptSize > MAX_RECEIPT_SIZE
+    );
 
     const invalid = !firstName
       || phone.length !== 10
       || !emailPattern.test(email)
+      || receiptMetadataInvalid
       || !billRange
       || billRange === "under_2000"
       || !timeframe
@@ -116,11 +145,12 @@ export async function POST(request: Request) {
     const requestedEventId = asText(raw.eventId, 160);
     const uuid = requestedEventId.replace(/^lead_/, "") || crypto.randomUUID();
     const eventId = `lead_${uuid}`;
+    const receiptId = /^[a-zA-Z0-9_-]{8,160}$/.test(requestedReceiptId) ? requestedReceiptId : crypto.randomUUID();
 
     // Internal QA can validate the complete form at ?test=1 without creating
     // a CRM record or teaching Meta that a staff submission is a real lead.
     if (raw.testMode === true) {
-      return Response.json({ ok: true, eventId, receiptUploadToken: "test", test: true }, { status: 202, headers: { "Cache-Control": "no-store" } });
+      return Response.json({ ok: true, eventId, receiptId, receiptUploadToken: "test", test: true }, { status: 202, headers: { "Cache-Control": "no-store" } });
     }
 
     const webhook = process.env.MAKE_WEBHOOK_URL;
@@ -174,19 +204,16 @@ export async function POST(request: Request) {
     const qualified = isFlatForm || leadScore >= 70;
     const priority = qualified ? "quote_now" : leadScore >= 50 ? "warm" : "nurture";
 
-    const requestedReceiptId = asText(receiptMeta?.id, 160);
-    const receiptId = /^[a-zA-Z0-9_-]{8,160}$/.test(requestedReceiptId) ? requestedReceiptId : crypto.randomUUID();
-    // Bind the upload permission to this lead. The file is optional and is
-    // uploaded after the lead is accepted, so do not publish a download URL
-    // until Vercel Blob confirms that the object exists.
-    const receiptUploadToken = isFlatForm ? "" : createReceiptToken(receiptId, "upload", 2 * 60 * 60, { eventId });
+    // Bind the private upload permission to this lead. The browser receives
+    // only a short-lived token for this one receipt id.
+    const receiptUploadToken = createReceiptToken(receiptId, "upload", 2 * 60 * 60, { eventId });
     const receipt = {
       received: receiptReceived,
-      status: isFlatForm ? "not_requested" : "pending",
-      id: isFlatForm ? "" : receiptId,
-      fileName: asText(receiptMeta?.fileName, 260),
-      contentType: asText(receiptMeta?.contentType, 120),
-      size: Number(receiptMeta?.size || 0),
+      status: "pending",
+      id: receiptId,
+      fileName: receiptFileName,
+      contentType: receiptContentType,
+      size: receiptSize,
       url: "",
     };
 
@@ -262,14 +289,14 @@ export async function POST(request: Request) {
         country: countryName,
         countryCode,
       },
-      receiptExpected: !isFlatForm,
-      receiptStatus: isFlatForm ? "not_requested" : "pending",
+      receiptExpected: true,
+      receiptStatus: "pending",
       receiptUrl: "",
       leadScore,
       qualified,
       quoteReady: true,
       priority,
-      crmStatus: isFlatForm ? "Nuevo lead" : receiptReceived ? "Expediente completo" : "Recibo pendiente",
+      crmStatus: receiptReceived ? "Expediente completo" : "Recibo pendiente",
       tracking,
       receipt,
       server: {

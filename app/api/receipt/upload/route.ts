@@ -131,6 +131,9 @@ export async function POST(request: Request) {
           allowedContentTypes: ALLOWED_TYPES,
           maximumSizeInBytes: MAX_FILE_SIZE,
           addRandomSuffix: false,
+          // A visitor may retry after a dropped response. This token is scoped
+          // to one receipt id, so replacing only that private object is safe.
+          allowOverwrite: true,
           tokenPayload: JSON.stringify({
             id,
             eventId: tokenPayload.eventId || "",
