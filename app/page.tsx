@@ -33,8 +33,31 @@ const installations = [
 
 const processSteps = [
   ["01", "Comparte tus datos y recibo de luz"],
-  ["02", "Revisamos tu consumo y tu proyecto"],
-  ["03", "Te contactamos con una propuesta"],
+  ["02", "Dimensionamos el sistema para tu consumo"],
+  ["03", "Te contactamos para explicarte la propuesta"],
+] as const;
+
+const projectScope = [
+  {
+    number: "01",
+    title: "Análisis de consumo",
+    text: "Revisamos tu recibo para entender cuánto consumes y cuánto estás pagando actualmente.",
+  },
+  {
+    number: "02",
+    title: "Diseño y dimensionamiento",
+    text: "Calculamos la capacidad del sistema solar de acuerdo con las necesidades de tu inmueble.",
+  },
+  {
+    number: "03",
+    title: "Instalación y puesta en operación",
+    text: "Instalamos paneles, inversor y estructura, y dejamos el sistema listo para generar energía.",
+  },
+  {
+    number: "04",
+    title: "Monitoreo de tu sistema",
+    text: "Configuramos la plataforma de monitoreo para que puedas consultar la generación de energía.",
+  },
 ] as const;
 
 const assurances = [
@@ -102,6 +125,23 @@ export default function QuotePage() {
       </ul>
     </section>
 
+    <section className="bm-evaluation-section" id="cotiza" aria-labelledby="bm-evaluation-title">
+      <div className="bm-evaluation-shell">
+        <aside className="bm-evaluation-intro">
+          <p className="bm-evaluation-kicker">COTIZACIÓN PERSONALIZADA</p>
+          <h2 id="bm-evaluation-title">Empecemos por tu consumo real.</h2>
+          <p>Completa el formulario y adjunta tu recibo. Con esa información podremos preparar una propuesta solar para tu casa o negocio.</p>
+
+          <ol>
+            {processSteps.map(([number, title]) => <li key={number}><span>{number}</span><strong>{title}</strong></li>)}
+          </ol>
+
+          <p className="bm-evaluation-location"><strong>Zona de atención</strong> Guadalajara y Zona Metropolitana.</p>
+        </aside>
+        <FlatLeadForm />
+      </div>
+    </section>
+
     <section className="bm-real-work bm-compact-section" aria-labelledby="bm-installations-title">
       <div className="bm-editorial-heading">
         <p>Instalaciones reales</p>
@@ -116,15 +156,20 @@ export default function QuotePage() {
       </div>
     </section>
 
-    <section className="bm-how-it-works" aria-labelledby="bm-process-title">
+    <section className="bm-how-it-works" aria-labelledby="bm-project-title">
       <div className="bm-compact-section">
         <div className="bm-editorial-heading">
-          <p>Proceso simple</p>
-          <h2 id="bm-process-title">Cómo funciona</h2>
+          <p>Tu proyecto solar</p>
+          <h2 id="bm-project-title">Un sistema diseñado para tu consumo, no una cotización genérica.</h2>
+          <span>BM Soluciones se encarga del proyecto fotovoltaico desde el análisis inicial hasta la puesta en operación.</span>
         </div>
-        <ol className="bm-process-grid">
-          {processSteps.map(([number, title]) => <li key={number}><span>{number}</span><strong>{title}</strong></li>)}
-        </ol>
+        <div className="bm-scope-grid">
+          {projectScope.map((item) => <article key={item.number}>
+            <span>{item.number}</span>
+            <h3>{item.title}</h3>
+            <p>{item.text}</p>
+          </article>)}
+        </div>
       </div>
     </section>
 
@@ -145,17 +190,11 @@ export default function QuotePage() {
         </div>
 
         <div className="bm-project-strip">
-          <p><strong>01</strong><span>Evaluación y diseño del sistema fotovoltaico.</span></p>
-          <p><strong>02</strong><span>Suministro, instalación y puesta en operación.</span></p>
-          <p><strong>03</strong><span>Monitoreo, soporte y mantenimiento.</span></p>
+          <p><strong>01</strong><span>Propuesta basada en tu recibo y consumo.</span></p>
+          <p><strong>02</strong><span>Equipamiento definido para cada proyecto.</span></p>
+          <p><strong>03</strong><span>Instalación, puesta en operación y monitoreo.</span></p>
           <a href="#cotiza">Solicitar propuesta</a>
         </div>
-      </div>
-    </section>
-
-    <section className="bm-evaluation-section" id="cotiza" aria-label="Cotización solar">
-      <div className="bm-evaluation-shell">
-        <FlatLeadForm />
       </div>
     </section>
 
